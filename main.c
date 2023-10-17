@@ -1,6 +1,5 @@
 #include "main.h"
 
-
 /**
  * main - The main entry point of the program.
  *
@@ -20,15 +19,22 @@ int main(void)
 
 	while (1)
 	{
-		write(STDOUT_FILENO, "$ ", 2); /* Print the shell prompt */
+		if (isatty(fileno(stdin)))
+		{
+			/* Print the shell prompt if input is from a terminal */
+			write(STDOUT_FILENO, "$ ", 2);
+		}
 
 		line_length = getline(&input, &input_size, stdin);
 
 		if (line_length == -1)
 		{
 			/* Handle end of file (Ctrl+D) */
-			write(STDOUT_FILENO, "\n", 1);
-			free(input);
+			if (isatty(fileno(stdin)))
+			{
+				write(STDOUT_FILENO, "\n", 1);
+			}
+
 			break;
 		}
 
