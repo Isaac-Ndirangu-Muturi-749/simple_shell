@@ -1,26 +1,26 @@
 #include "main.h"
 
 /**
- * execute_commands - Execute the commands entered by the user.
+ * execute_cmds - Execute the cmds entered by the user.
  *
- * @input: The input string containing the command.
+ * @input: The input string containing the cmd.
  */
-void execute_commands(char *input)
+void execute_cmds(char *input)
 {
-	char *command = strtok(input, " ");
+	char *cmd = strtok(input, " ");
 	pid_t child_pid;
 
-	if (command == NULL)
+	if (cmd == NULL)
 	{
 		return; /* Empty line, do nothing */
 	}
 
 	/* Check if the user entered "exit" */
-	if (_strcmp(command, "exit") == 0)
+	if (_strcmp(cmd, "exit") == 0)
 	{
 		exit(EXIT_SUCCESS); /* Exit the shell */
 	}
-	else if (_strcmp(command, "env") == 0)
+	else if (_strcmp(cmd, "env") == 0)
 	{
 		print_environment(); /* Call the function to print environment */
 		return;
@@ -37,7 +37,7 @@ void execute_commands(char *input)
 	if (child_pid == 0)
 	{
 		/* Child process */
-		execute_command_with_args(command);
+		execute_cmd_with_args(cmd);
 	}
 	else
 	{
@@ -50,19 +50,19 @@ void execute_commands(char *input)
 
 
 /**
- * construct_argument_array - Construct an argument array for the command.
+ * construct_argument_array - Construct an argument array for the cmd.
  *
- * @command: The command to execute.
+ * @cmd: The cmd to execute.
  * @argv: Pointer to the argument array to be constructed.
  *
  * Return: the number of arguments in the array.
  */
-int construct_argument_array(char *command, char **argv)
+int construct_argument_array(char *cmd, char **argv)
 {
 	int arg_count = 0;
 	char *arg;
 
-	argv[arg_count++] = command;
+	argv[arg_count++] = cmd;
 	arg = strtok(NULL, " ");
 
 	while (arg != NULL && arg_count < (MAX_ARG_COUNT - 1))
@@ -75,14 +75,14 @@ int construct_argument_array(char *command, char **argv)
 }
 
 /**
- * execute_command - Execute a command with its arguments.
+ * execute_cmd - Execute a cmd with its arguments.
  *
- * @full_path: The full path to the command.
+ * @fullpath: The full path to the cmd.
  * @argv: The argument array.
  */
-void execute_command(char *full_path, char **argv)
+void execute_cmd(char *fullpath, char **argv)
 {
-	if (execve(full_path, argv, environ) == -1)
+	if (execve(fullpath, argv, environ) == -1)
 	{
 		perror("execve");
 		exit(EXIT_FAILURE);
@@ -90,22 +90,22 @@ void execute_command(char *full_path, char **argv)
 }
 
 /**
- * execute_command_with_args - Execute a command with its arguments.
+ * execute_cmd_with_args - Execute a cmd with its arguments.
  *
- * @command: The command to execute.
+ * @cmd: The cmd to execute.
  */
-void execute_command_with_args(char *command)
+void execute_cmd_with_args(char *cmd)
 {
 	char **argv = (char **)malloc(sizeof(char *) * MAX_ARG_COUNT);
-	char *path_copy;
-	char full_path[MAX_PATH_LENGTH];
-	int full_path_len = 0;
+	char *pathcpy;
+	char fullpath[MAX_PATH_LENGTH];
+	int fullpath_len = 0;
 
-	construct_argument_array(command, argv);
+	construct_argument_array(cmd, argv);
 
-	if (_strchr(command, '/') != NULL)
+	if (_strchr(cmd, '/') != NULL)
 	{
-		execute_command(command, argv);
+		execute_cmd(cmd, argv);
 	}
 	else
 	{
@@ -117,23 +117,23 @@ void execute_command_with_args(char *command)
 			exit(EXIT_FAILURE);
 		}
 
-		path_copy = _strdup(path);
-		if (path_copy == NULL)
+		pathcpy = _strdup(path);
+		if (pathcpy == NULL)
 		{
 			perror("strdup");
 			exit(EXIT_FAILURE);
 		}
 
-		if (construct_full_path(command, path_copy, full_path, &full_path_len) == 0)
+		if (make_fullpath(cmd, pathcpy, fullpath, &fullpath_len) == 0)
 		{
-			execute_command(full_path, argv);
+			execute_cmd(fullpath, argv);
 		}
 		else
 		{
-			perror("Command not found");
+			perror("cmd not found");
 			exit(EXIT_FAILURE);
 		}
-		free(path_copy);
+		free(pathcpy);
 	}
 	free(argv);
 }
