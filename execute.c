@@ -51,39 +51,36 @@ void execute_commands(char *input)
  *
  * @command: The command to execute.
  */
+/**
+ * execute_command_with_args - Execute a command with its arguments.
+ *
+ * @command: The command to execute.
+ */
 void execute_command_with_args(char *command)
 {
-	char **argv = (char **)malloc(sizeof(char *) * MAX_ARG_COUNT);
-	int arg_count = 0;
-	char *arg;
+    char **argv = (char **)malloc(sizeof(char *) * MAX_ARG_COUNT);
+    int arg_count = 0;
+    char *arg;
 
-	argv[arg_count++] = command;
+    argv[arg_count++] = command;
 
-	arg = strtok(NULL, " ");
-	while (arg != NULL && arg_count < (MAX_ARG_COUNT - 1))
-	{
-		argv[arg_count++] = arg;
-		arg = strtok(NULL, " ");
-	}
+    arg = strtok(NULL, " ");
+    while (arg != NULL && arg_count < (MAX_ARG_COUNT - 1))
+    {
+        argv[arg_count++] = arg;
+        arg = strtok(NULL, " ");
+    }
 
-	argv[arg_count] = NULL; /* Null-terminate the argument array */
+    argv[arg_count] = NULL; /* Null-terminate the argument array */
 
-	if (command_exists(command))
-	{
-		if (execve(command, argv, environ) == -1)
-		{
-			perror("execve");
-			exit(EXIT_FAILURE);
-		}
-	}
-	else
-	{
-		perror("Command not found");
-		exit(EXIT_FAILURE);
-	}
-
-	free(argv);
+    if (execve(command, argv, environ) == -1)
+    {
+        perror("execve");
+        exit(EXIT_FAILURE);
+    }
 }
+
+
 
 /**
  * command_exists - Check if a command exists in the PATH.

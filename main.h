@@ -13,7 +13,7 @@ extern char **environ; /*Declare environ*/
 
 #define MAX_INPUT_SIZE 100
 #define MAX_ARG_COUNT 32
-#define MAX_PATH_LENGTH 1024
+#define MAX_PATH_LENGTH 4096
 
 
 int main(void);
