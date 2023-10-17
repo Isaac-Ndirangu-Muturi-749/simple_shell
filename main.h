@@ -24,5 +24,10 @@ void _strncat(char *dest, const char *src, size_t n);
 void execute_command_with_args(char *command);
 int _strcmp(char *s1, char *s2);
 void print_environment(void);
+const char *_getenv(const char *name);
+const char *_strchr(const char *s, char c);
+int _strncmp(const char *s1, const char *s2, size_t n);
+char *_strdup(const char *s);
+char *_strcpy(char *dest, const char *src);
 
 #endif /* MAIN_H */

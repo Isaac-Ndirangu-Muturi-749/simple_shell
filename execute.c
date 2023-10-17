@@ -15,14 +15,14 @@ void execute_commands(char *input)
 		return; /* Empty line, do nothing */
 	}
 
-	/*Check if the user entered "exit"*/
+	/* Check if the user entered "exit" */
 	if (_strcmp(command, "exit") == 0)
 	{
-		exit(EXIT_SUCCESS);/*Exit the shell*/
+		exit(EXIT_SUCCESS); /* Exit the shell */
 	}
 	else if (_strcmp(command, "env") == 0)
 	{
-		print_environment();  /*Call the function to print environment*/
+		print_environment(); /* Call the function to print environment */
 		return;
 	}
 
@@ -94,12 +94,24 @@ void execute_command_with_args(char *command)
  */
 int command_exists(const char *command)
 {
-	/*Provide your own PATH environment variable*/
-	char *path_env = "/bin:/usr/bin";
-
-	char *path = strtok(path_env, ":");
+	/* Retrieve the PATH environment variable */
+	const char *path_env = _getenv("PATH");
+	char *path_env_copy;
+	char *path;
 	char full_path[MAX_PATH_LENGTH];
 
+	if (path_env == NULL)
+	{
+		return (0); /* PATH is not set, the command cannot exist */
+	}
+	path_env_copy = _strdup(path_env); /* Create a copy of path_env */
+	if (path_env_copy == NULL)
+	{
+		perror("strdup");
+		return (0);
+	}
+
+	path = strtok(path_env_copy, ":");
 	while (path != NULL)
 	{
 		int path_length = _strlen(path);
@@ -114,27 +126,12 @@ int command_exists(const char *command)
 
 			if (access(full_path, X_OK) == 0)
 			{
-				return (1); /*Command exists in this directory*/
+				free(path_env_copy); /* Free the allocated memory */
+				return (1); /* Command exists in this directory */
 			}
 		}
-
 		path = strtok(NULL, ":");
 	}
-
-	return (0); /*Command not found in any directory in PATH*/
-}
-
-/**
- * print_environment - Print the current environment variables.
- */
-void print_environment(void)
-{
-	char **env = environ;
-
-	while (*env != NULL)
-	{
-		write(STDOUT_FILENO, *env, _strlen(*env));
-		write(STDOUT_FILENO, "\n", 1);
-		env++;
-	}
+	free(path_env_copy); /* Free the allocated memory */
+	return (0); /* Command not found in any directory in PATH */
 }
