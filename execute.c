@@ -18,7 +18,7 @@ void execute_cmds(char *input)
 	/* Check if the user entered "exit" */
 	if (_strcmp(cmd, "exit") == 0)
 	{
-		exit(EXIT_SUCCESS); /* Exit the shell */
+		exit(2); /* Exit the shell with a status of 2 */
 	}
 	else if (_strcmp(cmd, "env") == 0)
 	{
@@ -31,7 +31,7 @@ void execute_cmds(char *input)
 	if (child_pid == -1)
 	{
 		perror("fork");
-		exit(EXIT_FAILURE);
+		exit(2);
 	}
 
 	if (child_pid == 0)
