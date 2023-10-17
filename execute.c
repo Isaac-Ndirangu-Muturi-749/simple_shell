@@ -46,11 +46,49 @@ void execute_commands(char *input)
 	}
 }
 
+
+
+
 /**
- * execute_command_with_args - Execute a command with its arguments.
+ * construct_argument_array - Construct an argument array for the command.
  *
  * @command: The command to execute.
+ * @argv: Pointer to the argument array to be constructed.
+ *
+ * Return: the number of arguments in the array.
  */
+int construct_argument_array(char *command, char **argv)
+{
+	int arg_count = 0;
+	char *arg;
+
+	argv[arg_count++] = command;
+	arg = strtok(NULL, " ");
+
+	while (arg != NULL && arg_count < (MAX_ARG_COUNT - 1))
+	{
+		argv[arg_count++] = arg;
+		arg = strtok(NULL, " ");
+	}
+	argv[arg_count] = NULL; /* Null-terminate the argument array */
+	return (arg_count);
+}
+
+/**
+ * execute_command - Execute a command with its arguments.
+ *
+ * @full_path: The full path to the command.
+ * @argv: The argument array.
+ */
+void execute_command(char *full_path, char **argv)
+{
+	if (execve(full_path, argv, environ) == -1)
+	{
+		perror("execve");
+		exit(EXIT_FAILURE);
+	}
+}
+
 /**
  * execute_command_with_args - Execute a command with its arguments.
  *
@@ -58,77 +96,44 @@ void execute_commands(char *input)
  */
 void execute_command_with_args(char *command)
 {
-    char **argv = (char **)malloc(sizeof(char *) * MAX_ARG_COUNT);
-    int arg_count = 0;
-    char *arg;
-
-    argv[arg_count++] = command;
-
-    arg = strtok(NULL, " ");
-    while (arg != NULL && arg_count < (MAX_ARG_COUNT - 1))
-    {
-        argv[arg_count++] = arg;
-        arg = strtok(NULL, " ");
-    }
-
-    argv[arg_count] = NULL; /* Null-terminate the argument array */
-
-    if (execve(command, argv, environ) == -1)
-    {
-        perror("execve");
-        exit(EXIT_FAILURE);
-    }
-}
-
-
-
-/**
- * command_exists - Check if a command exists in the PATH.
- *
- * @command: The command to check for.
- *
- * Return: 1 if the command exists, 0 otherwise.
- */
-int command_exists(const char *command)
-{
-	/* Retrieve the PATH environment variable */
-	const char *path_env = _getenv("PATH");
-	char *path_env_copy;
-	char *path;
+	char **argv = (char **)malloc(sizeof(char *) * MAX_ARG_COUNT);
+	char *path_copy;
 	char full_path[MAX_PATH_LENGTH];
+	int full_path_len = 0;
 
-	if (path_env == NULL)
+	construct_argument_array(command, argv);
+
+	if (_strchr(command, '/') != NULL)
 	{
-		return (0); /* PATH is not set, the command cannot exist */
+		execute_command(command, argv);
 	}
-	path_env_copy = _strdup(path_env); /* Create a copy of path_env */
-	if (path_env_copy == NULL)
+	else
 	{
-		perror("strdup");
-		return (0);
-	}
+		const char *path = _getenv("PATH");
 
-	path = strtok(path_env_copy, ":");
-	while (path != NULL)
-	{
-		int path_length = _strlen(path);
-		int command_length = _strlen(command);
-
-		if (path_length + command_length + 2 < MAX_PATH_LENGTH)
+		if (path == NULL)
 		{
-			full_path[0] = '\0';
-			_strncat(full_path, path, path_length);
-			_strncat(full_path, "/", 1);
-			_strncat(full_path, command, command_length);
-
-			if (access(full_path, X_OK) == 0)
-			{
-				free(path_env_copy); /* Free the allocated memory */
-				return (1); /* Command exists in this directory */
-			}
+			perror("getenv");
+			exit(EXIT_FAILURE);
 		}
-		path = strtok(NULL, ":");
+
+		path_copy = _strdup(path);
+		if (path_copy == NULL)
+		{
+			perror("strdup");
+			exit(EXIT_FAILURE);
+		}
+
+		if (construct_full_path(command, path_copy, full_path, &full_path_len) == 0)
+		{
+			execute_command(full_path, argv);
+		}
+		else
+		{
+			perror("Command not found");
+			exit(EXIT_FAILURE);
+		}
+		free(path_copy);
 	}
-	free(path_env_copy); /* Free the allocated memory */
-	return (0); /* Command not found in any directory in PATH */
+	free(argv);
 }
