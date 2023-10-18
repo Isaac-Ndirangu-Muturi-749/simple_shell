@@ -1,9 +1,11 @@
 #include "main.h"
 
+
+
 /**
- * execute_cmds - Execute the cmds entered by the user.
+ * execute_cmds - Execute the commands entered by the user.
  *
- * @input: The input string containing the cmd.
+ * @input: The input string containing the command.
  */
 void execute_cmds(char *input)
 {
@@ -14,28 +16,28 @@ void execute_cmds(char *input)
 	{
 		return; /* Empty line, do nothing */
 	}
-	/*Check if the user entered a comment (line starts with '#')*/
-	if (cmd[0] == '#')
-	{
-		return; /*Ignore the line*/
-	}
-	/* Check if the user entered "exit" */
+
+	/*Remove comment lines (starting with '#')*/
+	remove_comment(input);
+
+	/* Check for built-in commands */
 	if (_strcmp(cmd, "exit") == 0)
 	{
-		exit(2); /* Exit the shell with a status of 2 */
+		free(input);
+		exit(0);
 	}
 	else if (_strcmp(cmd, "env") == 0)
 	{
-		print_environment(); /* Call the function to print environment */
+		print_environment(); /* Call the function to print the environment */
 		return;
 	}
+
 	child_pid = fork();
 	if (child_pid == -1)
 	{
 		perror("fork");
 		exit(2);
 	}
-
 	if (child_pid == 0)
 	{
 		/* Child process */
@@ -48,6 +50,8 @@ void execute_cmds(char *input)
 		wait(NULL); /* Wait for the child process to finish */
 	}
 }
+
+
 
 
 /**
@@ -106,35 +110,14 @@ void execute_cmd_with_args(char *cmd)
  */
 void handle_child_exit(char **argv)
 {
-	int status = 0; /* Initialize status */
+	int status;
 
-	/* Wait for the child process to finish and get its exit status */
 	wait(&status);
 
-	if (WIFEXITED(status))
+	if (WIFEXITED(status) && WEXITSTATUS(status) == 127)
 	{
-		int exit_status = WEXITSTATUS(status);
-
-		if (exit_status == 127)
-		{
-			char error_message[128];
-			int len = strlen(argv[0]);
-
-			/*Format the error message manually*/
-			_strcpy(error_message, argv[0]);
-			error_message[len] = ':';
-			error_message[len + 1] = ' ';
-			error_message[len + 2] = '1';
-			error_message[len + 3] = ':';
-			error_message[len + 4] = ' ';
-			_strcpy(error_message + len + 5, argv[0]);
-			error_message[len + 5 + len] = ':';
-			error_message[len + 6 + len] = ' ';
-			_strcpy(error_message + len + 7 + len, "not found\n");
-
-			write(STDERR_FILENO, error_message, len + 16 + len);
-			exit(127);
-		}
+		perror(argv[0]);
+		exit(127);
 	}
 }
 
@@ -160,7 +143,8 @@ int construct_argument_array(char *cmd, char **argv)
 		argv[arg_count++] = arg;
 		arg = strtok(NULL, " ");
 	}
-	argv[arg_count] = NULL; /* Null-terminate the argument array */
+
+	argv[arg_count] = NULL; /*Null-terminate the argument array*/
 	return (arg_count);
 }
 
@@ -178,4 +162,3 @@ void execute_cmd(char *fullpath, char **argv)
 		exit(EXIT_FAILURE);
 	}
 }
-
