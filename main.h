@@ -32,5 +32,7 @@ char *_strcpy(char *dest, const char *src);
 void _memcpy(void *dest, const void *src, size_t n);
 int make_fullpath(char *cmd, char *pathcpy, char *fullpath, int *fullpath_len);
 int construct_argument_array(char *cmd, char **argv);
+void handle_child_exit(char **argv);
+void execute_cmd(char *fullpath, char **argv);
 
 #endif /* MAIN_H */
